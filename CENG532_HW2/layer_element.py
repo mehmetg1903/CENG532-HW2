@@ -1,8 +1,8 @@
 import traceback
 import threading
 import zmq
-import pickle
 from globals.layer_globals import *
+
 
 class LayerElement(object):
     def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, to_int='127.0.0.1'):
@@ -40,7 +40,6 @@ class LayerElement(object):
             if to_interface == SEND_TO_UPPER:
                 self._sock_send_to_upper.send(str(json_packet))
             elif to_interface == SEND_TO_LOWER:
-                print 'send_to_lower'
                 self._sock_send_to_lower.send(str(json_packet))
         except:
             traceback.print_exc()
@@ -71,6 +70,7 @@ class LayerElement(object):
             t = threading.Thread(target=listen_interface_worker, args=(self, basic_operation, listen_interface))
             threads.append(t)
             t.start()
+
 
 def listen_interface_worker(self, basic_operation, listen_interface):
     if listen_interface not in [RECV_FROM_LOWER, RECV_FROM_UPPER]:

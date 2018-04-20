@@ -1,19 +1,22 @@
 from globals.layer_globals import *
 import traceback
-import zmq
+
 
 def app_layer_forward(inst, msg):
     msg = eval(msg)
-    print 'Message received from (%s, %s).\nContent: %s' % (msg['host'], msg['port'], msg['message'])
+    print 'Message received from (%s, %s).\tContent: %s' % (msg['host'], msg['port'], msg['message'])
+
 
 def app_layer_operation(inst, msg):
     msg = eval(msg)
     print 'Message received from (%s, %s).\nContent: %s' % (msg['host'], msg['port'], msg['message'])
     msg['port'] -= 12
+    msg['action_type'] = SEND_TO_LOWER
     inst.send_packet(str(msg), SEND_TO_LOWER)
 
 
 def network_layer_operation(inst, msg):
+    print 'Arrived network layer with: ' + msg
     msg = eval(msg)
     if msg['action_type'] not in (SEND_TO_UPPER, SEND_TO_LOWER, NETWORK_BROADCAST):
         print 'Erroneous action!'
@@ -35,7 +38,9 @@ def network_layer_operation(inst, msg):
         return False
     return True
 
+
 def phy_link_layer_operation(inst, msg):
+    print 'Arrived phy_link layer with: ' + msg
     msg = eval(msg)
     if msg['action_type'] not in [SEND_TO_UPPER, SEND_TO_LOWER, NETWORK_BROADCAST]:
         print 'Erroneous action!'
