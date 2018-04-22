@@ -13,8 +13,8 @@ def app_layer_forward(inst, msg):
 def app_layer_operation(inst, msg):
     msg = eval(msg)
     print 'Message received from (%s, %s).\nContent: %s' % (msg['host'], msg['port'], msg['message'])
-    msg['port'] -= 12
     msg['action_type'] = SEND_TO_LOWER
+    msg['message_type'] = topology_globals.FRAME
     inst.send_packet(str(msg), msg['action_type'])
 
 
