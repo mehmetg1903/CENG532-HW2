@@ -76,32 +76,47 @@ class LayerElement(object):
             'destination': dest, #TODO,
             'route': list()
         }
+        return rreq_package
 
-    def route_request(self, rreq_packet=None, dest=None):
-        if rreq_packet == None: # Source node
-            rreq_packet = self.create_rreq_package(dest)
-            self.active_route_requests.add(rreq_packet['id'])
+    def route_request(self, msg, dest=None):
+        rreq_package = None
+        if 'rreq_package' in msg.keys():
+            rreq_package = msg['rreq_package']
+
+        if rreq_package == None: # Source node
+            rreq_package = self.create_rreq_package(dest)
+            self.active_route_requests.add(rreq_package['id'])
         else: # Junction or destination node
-            if rreq_packet['id'] in self.active_route_requests:
+            if rreq_package['id'] in self.active_route_requests:
                 return
             else:
-                if rreq_packet['dest'] == self.ip:
-                    route_response(rreq_packet)
-                    return
+                if rreq_package['dest'] == self.ip:
+                    rreq_package['route'].append(self.ip)
+                    return self.route_response(rreq_package)
+
                 else:
-                    rreq_packet['route'].append(self.ip)
-                    self.active_route_requests.add(rreq_packet['id'])
+                    rreq_package['route'].append(self.ip)
+                    self.active_route_requests.add(rreq_package['id'])
 
-        for node in topology_globals.nodes:
-            json_packet = {
-                'host': self.ip,
-                'source_x': self._x,
-                'source_y': self._y,
-                'message_type': topology_globals.RREQ,
-                'rreq_packet': rreq_packet
-            }
-            self.send_packet(json_packet, SEND_TO_LOWER)
+        json_packet = {
+            'host': self.ip,
+            'source_x': self._x,
+            'source_y': self._y,
+            'action_type': SEND_TO_LOWER,
+            'message_type': topology_globals.RREQ,
+            'rreq_packet': rreq_package
+        }
+        return json_packet
 
+    def route_response(self, rreq_package):
+        json_packet = {
+            'message_type': topology_globals.RRESP,
+            'action_type': SEND_TO_LOWER,
+            'host': self.ip,
+            'dest': rreq_package['route'][rreq_package['route'].index(self.ip) - 1],
+            'rreq_packet': rreq_package
+        }
+        return json_packet
 
     def start_listenning(self, basic_operation, listen_interfaces):
         threads = []

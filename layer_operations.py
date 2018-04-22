@@ -26,13 +26,34 @@ def network_layer_operation(inst, msg):
         return False
     try:
         if msg['action_type'] == SEND_TO_UPPER:
-            if 'is_broadcast' not in msg:
+            if msg['message_type'] == topology_globals.RREQ:
+                msg['action_type'] = SEND_TO_LOWER
+                msg = inst.route_request(msg)
                 inst.send_packet(msg, msg['action_type'])
-            else:
-                # TODO: Update routing table.
-                pass
+
+            elif msg['message_type'] == topology_globals.RRESP:
+                if msg['rreq_package']['source'] != inst.ip:
+                    msg['action_type'] = SEND_TO_LOWER
+                    msg = inst.route_response(msg)
+                    inst.send_packet(msg, msg['action_type'])
+                else:
+                    inst.active_route_requests.pop(msg['rreq_package']['id'])
+
+            elif msg['message_type'] == topology_globals.FRAME:
+                if msg['dest'] == inst.ip:
+                    msg['action_type'] = SEND_TO_UPPER
+                    inst.send_packet(msg, msg['action_type'])
+                else:
+                    msg['dest'] = msg['rreq_package']['route'][ msg['rreq_package']['route'].index(inst.ip) + 1 ]
+                    msg['action_type'] = SEND_TO_LOWER
+                    inst.send_packet(msg, msg['action_type'])
+
         elif msg['action_type'] == SEND_TO_LOWER:
             # TODO: Routing.
+            if msg['message_type'] == topology_globals.RREQ:
+                msg = inst.route_request(msg)
+                inst.send_packet(msg, msg['action_type'])
+
             msg['port'] += 10012
             inst.send_packet(msg, msg['action_type'])
 
