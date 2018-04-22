@@ -72,31 +72,36 @@ class LayerElement(object):
     def create_rreq_package(self, dest):
         rreq_package = {
             'id': uuid.uuid4().int,
-            'source': source#TODO,
-            'destination': dest #TODO,
+            'source': self.ip, #TODO,
+            'destination': dest, #TODO,
             'route': list()
         }
 
     def route_request(self, rreq_packet=None, dest=None):
-        if rreq_packet == None: #Source node
+        if rreq_packet == None: # Source node
             rreq_packet = self.create_rreq_package(dest)
             self.active_route_requests.add(rreq_packet['id'])
-        else:
+        else: # Junction or destination node
             if rreq_packet['id'] in self.active_route_requests:
                 return
             else:
-                if rreq_packet['dest'] ==
-
+                if rreq_packet['dest'] == self.ip:
+                    route_response(rreq_packet)
+                    return
+                else:
+                    rreq_packet['route'].append(self.ip)
+                    self.active_route_requests.add(rreq_packet['id'])
 
         for node in topology_globals.nodes:
             json_packet = {
-                'host': HOST,#TODO
-                'port': node,
+                'host': self.ip,
+                'source_x': self._x,
+                'source_y': self._y,
+                'message_type': topology_globals.RREQ,
                 'rreq_packet': rreq_packet
             }
+            self.send_packet(json_packet, SEND_TO_LOWER)
 
-
-        for node in topology_globals.nodes:
 
     def start_listenning(self, basic_operation, listen_interfaces):
         threads = []

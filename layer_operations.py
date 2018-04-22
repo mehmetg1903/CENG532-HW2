@@ -1,6 +1,8 @@
 from globals.layer_globals import *
+from globals import topology_globals
 import traceback
 import datetime
+import math
 
 
 def app_layer_forward(inst, msg):
@@ -46,6 +48,11 @@ def phy_link_layer_operation(inst, msg):
     if msg['action_type'] not in [SEND_TO_UPPER, SEND_TO_LOWER, NETWORK_BROADCAST]:
         print 'Erroneous action!'
         return False
+
+    distance = math.sqrt(math.pow(inst._x - msg['source_x'], 2) + math.pow(inst._y - msg['source_y'], 2))
+    if distance > topology_globals.WIRELESS_RANGE:
+        return False
+
     try:
         if msg['action_type'] == SEND_TO_UPPER:
             msg['recv_date'] = datetime.datetime.utcnow()
