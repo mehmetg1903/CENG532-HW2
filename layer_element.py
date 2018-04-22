@@ -5,30 +5,31 @@ import pickle
 from globals.layer_globals import *
 
 class LayerElement(object):
-    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, to_int='127.0.0.1'):
+    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1'):
         self._channel_connections = dict()
-
+        self._x = _x
+        self._y = _y
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
-            print '_sock_recv_from_lower: %s OK!' % str(_port_recv_from_lower)
+            # print '_sock_recv_from_lower: %s OK!' % str(_port_recv_from_lower)
             self._sock_recv_from_lower = self._context_recv_from_lower.socket(zmq.PAIR)
             self._sock_recv_from_lower.bind('tcp://%s:%s' % (to_int, str(_port_recv_from_lower)))
 
         if _port_recv_from_upper != -1:
             self._context_recv_from_upper = zmq.Context()
-            print '_sock_recv_from_upper: %s OK!' % str(_port_recv_from_upper)
+            # print '_sock_recv_from_upper: %s OK!' % str(_port_recv_from_upper)
             self._sock_recv_from_upper = self._context_recv_from_upper.socket(zmq.PAIR)
             self._sock_recv_from_upper.bind('tcp://%s:%s' % (to_int, str(_port_recv_from_upper)))
 
         if _port_send_to_lower != -1:
             self._context_send_to_lower = zmq.Context()
-            print '_sock_send_to_lower: %s OK!' % str(_port_send_to_lower)
+            # print '_sock_send_to_lower: %s OK!' % str(_port_send_to_lower)
             self._sock_send_to_lower = self._context_send_to_lower.socket(zmq.PAIR)
             self._sock_send_to_lower.connect('tcp://%s:%s' % (to_int, str(_port_send_to_lower)))
 
         if _port_send_to_upper != -1:
             self._context_send_to_upper = zmq.Context()
-            print '_sock_send_to_upper: %s OK!' % str(_port_send_to_upper)
+            # print '_sock_send_to_upper: %s OK!' % str(_port_send_to_upper)
             self._sock_send_to_upper = self._context_send_to_upper.socket(zmq.PAIR)
             self._sock_send_to_upper.connect('tcp://%s:%s' % (to_int, str(_port_send_to_upper)))
 
@@ -40,7 +41,6 @@ class LayerElement(object):
             if to_interface == SEND_TO_UPPER:
                 self._sock_send_to_upper.send(str(json_packet))
             elif to_interface == SEND_TO_LOWER:
-                print 'send_to_lower'
                 self._sock_send_to_lower.send(str(json_packet))
         except:
             traceback.print_exc()

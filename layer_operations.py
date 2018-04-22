@@ -1,5 +1,6 @@
 from globals.layer_globals import *
 import traceback
+import datetime
 
 
 def app_layer_forward(inst, msg):
@@ -12,7 +13,7 @@ def app_layer_operation(inst, msg):
     print 'Message received from (%s, %s).\nContent: %s' % (msg['host'], msg['port'], msg['message'])
     msg['port'] -= 12
     msg['action_type'] = SEND_TO_LOWER
-    inst.send_packet(str(msg), SEND_TO_LOWER)
+    inst.send_packet(str(msg), msg['action_type'])
 
 
 def network_layer_operation(inst, msg):
@@ -47,9 +48,11 @@ def phy_link_layer_operation(inst, msg):
         return False
     try:
         if msg['action_type'] == SEND_TO_UPPER:
+            msg['recv_date'] = datetime.datetime.utcnow()
             inst.send_packet(msg, msg['action_type'])
         elif msg['action_type'] in [SEND_TO_LOWER]:
             msg['action_type'] = SEND_TO_UPPER
+            msg['send_date'] = datetime.datetime.utcnow()
             inst.send_to_channel(msg)
 
     except:
