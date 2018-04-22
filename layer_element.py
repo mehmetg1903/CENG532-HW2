@@ -1,14 +1,18 @@
 import traceback
 import threading
 import zmq
+import uuid
 import pickle
 from globals.layer_globals import *
+from globals import topology_globals
 
 class LayerElement(object):
     def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1'):
         self._channel_connections = dict()
         self._x = _x
         self._y = _y
+        self.active_route_requests = set()
+
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
             # print '_sock_recv_from_lower: %s OK!' % str(_port_recv_from_lower)
@@ -64,6 +68,35 @@ class LayerElement(object):
             traceback.print_exc()
             return False
         return True
+
+    def create_rreq_package(self, dest):
+        rreq_package = {
+            'id': uuid.uuid4().int,
+            'source': source#TODO,
+            'destination': dest #TODO,
+            'route': list()
+        }
+
+    def route_request(self, rreq_packet=None, dest=None):
+        if rreq_packet == None: #Source node
+            rreq_packet = self.create_rreq_package(dest)
+            self.active_route_requests.add(rreq_packet['id'])
+        else:
+            if rreq_packet['id'] in self.active_route_requests:
+                return
+            else:
+                if rreq_packet['dest'] ==
+
+
+        for node in topology_globals.nodes:
+            json_packet = {
+                'host': HOST,#TODO
+                'port': node,
+                'rreq_packet': rreq_packet
+            }
+
+
+        for node in topology_globals.nodes:
 
     def start_listenning(self, basic_operation, listen_interfaces):
         threads = []
