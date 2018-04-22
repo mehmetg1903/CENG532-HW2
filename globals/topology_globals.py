@@ -1,1 +1,5 @@
 nodes = []
+WIRELESS_RANGE = 100
+FRAME = 0
+RREQ = 1
+RRESP = 2

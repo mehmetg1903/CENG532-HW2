@@ -1,6 +1,8 @@
 from globals.layer_globals import *
+from globals import topology_globals
 import traceback
 import datetime
+import math
 
 
 def app_layer_forward(inst, msg):
@@ -11,8 +13,8 @@ def app_layer_forward(inst, msg):
 def app_layer_operation(inst, msg):
     msg = eval(msg)
     print 'Message received from (%s, %s).\nContent: %s' % (msg['host'], msg['port'], msg['message'])
-    msg['port'] -= 12
     msg['action_type'] = SEND_TO_LOWER
+    msg['message_type'] = topology_globals.FRAME
     inst.send_packet(str(msg), msg['action_type'])
 
 
@@ -24,15 +26,44 @@ def network_layer_operation(inst, msg):
         return False
     try:
         if msg['action_type'] == SEND_TO_UPPER:
-            if 'is_broadcast' not in msg:
+            if msg['message_type'] == topology_globals.RREQ:
+                msg['action_type'] = SEND_TO_LOWER
+                msg = inst.route_request(msg)
                 inst.send_packet(msg, msg['action_type'])
-            else:
-                # TODO: Update routing table.
-                pass
+
+            elif msg['message_type'] == topology_globals.RRESP:
+                if msg['rreq_package']['source'] != inst.ip:
+                    msg['action_type'] = SEND_TO_LOWER
+                    msg = inst.route_response(msg)
+                    inst.send_packet(msg, msg['action_type'])
+                else:
+                    inst.active_route_requests.pop(msg['rreq_package']['id'])
+                    rreq_package_tmp = msg['rreq_package']
+                    msg = inst.route_requiring_message[rreq_package_tmp['id']]
+                    msg['action_type'] = SEND_TO_LOWER
+                    inst.send_packet(msg, msg['action_type'])
+
+            elif msg['message_type'] == topology_globals.FRAME:
+                if msg['dest'] == inst.ip:
+                    msg['action_type'] = SEND_TO_UPPER
+                    inst.send_packet(msg, msg['action_type'])
+                else:
+                    msg['dest'] = msg['rreq_package']['route'][ msg['rreq_package']['route'].index(inst.ip) + 1 ]
+                    msg['action_type'] = SEND_TO_LOWER
+                    inst.send_packet(msg, msg['action_type'])
+
         elif msg['action_type'] == SEND_TO_LOWER:
             # TODO: Routing.
-            msg['port'] += 10012
-            inst.send_packet(msg, msg['action_type'])
+            if msg['message_type'] == topology_globals.RREQ:
+                msg = inst.route_request(msg)
+                inst.send_packet(msg, msg['action_type'])
+
+            elif msg['message_type'] == topology_globals.FRAME:
+                msg_tmp = msg
+                msg = inst.route_request(msg)
+                inst.route_requiring_message[msg['rreq_package']['id']] = msg_tmp
+                inst.send_packet(msg, msg['action_type'])
+        return
 
     except:
         print 'Error occurred in network layer.'
@@ -46,6 +77,11 @@ def phy_link_layer_operation(inst, msg):
     if msg['action_type'] not in [SEND_TO_UPPER, SEND_TO_LOWER, NETWORK_BROADCAST]:
         print 'Erroneous action!'
         return False
+
+    distance = math.sqrt(math.pow(inst._x - msg['source_x'], 2) + math.pow(inst._y - msg['source_y'], 2))
+    if distance > topology_globals.WIRELESS_RANGE:
+        return False
+
     try:
         if msg['action_type'] == SEND_TO_UPPER:
             msg['recv_date'] = datetime.datetime.utcnow()
