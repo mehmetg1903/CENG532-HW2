@@ -7,10 +7,11 @@ from globals.layer_globals import *
 from globals import topology_globals
 
 class LayerElement(object):
-    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1'):
+    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, _x=0, _y=0, _host='localhost', to_int='127.0.0.1'):
         self._channel_connections = dict()
         self._x = _x
         self._y = _y
+        self._host = _host
         self.active_route_requests = set()
         self.route_requiring_message = dict()
 
