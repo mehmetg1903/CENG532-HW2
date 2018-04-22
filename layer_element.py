@@ -57,7 +57,9 @@ class LayerElement(object):
             self._channel_context = zmq.Context()
 
         try:
-            HOST, PORT = json_packet['host'], json_packet['port']
+            # HOST, PORT = json_packet['host'], json_packet['port']
+            HOST, PORT = json_packet['dest'], 10012
+            # json_packet includes json_packet['dest']
             print HOST, PORT
             if HOST not in self._channel_connections:
                 self._channel_connections[HOST] = self._channel_context.socket(zmq.PAIR)
@@ -74,18 +76,18 @@ class LayerElement(object):
         rreq_package = {
             'id': uuid.uuid4().int,
             'source': self.ip, #TODO,
-            'destination': dest, #TODO,
+            'dest': dest, #TODO,
             'route': list()
         }
         return rreq_package
 
-    def route_request(self, msg, dest=None):
+    def route_request(self, msg):
         rreq_package = None
         if 'rreq_package' in msg.keys():
             rreq_package = msg['rreq_package']
 
         if rreq_package == None: # Source node
-            rreq_package = self.create_rreq_package(dest)
+            rreq_package = self.create_rreq_package(msg['dest'])
             self.active_route_requests.add(rreq_package['id'])
         else: # Junction or destination node
             if rreq_package['id'] in self.active_route_requests:
@@ -101,6 +103,7 @@ class LayerElement(object):
 
         json_packet = {
             'host': self.ip,
+            'is_broadcast': 1,
             'source_x': self._x,
             'source_y': self._y,
             'action_type': SEND_TO_LOWER,

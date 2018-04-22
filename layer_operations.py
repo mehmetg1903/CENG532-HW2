@@ -39,12 +39,15 @@ def network_layer_operation(inst, msg):
                 else:
                     inst.active_route_requests.pop(msg['rreq_package']['id'])
                     rreq_package_tmp = msg['rreq_package']
-                    msg = inst.route_requiring_message[rreq_package_tmp['id']]
+                    msg = inst.route_requiring_message.pop(rreq_package_tmp['id'])
+                    msg['rreq_package'] = rreq_package_tmp
+                    msg['dest'] = msg['rreq_package']['route'][0]
+                    msg['message_type'] = topology_globals.FRAME
                     msg['action_type'] = SEND_TO_LOWER
                     inst.send_packet(msg, msg['action_type'])
 
             elif msg['message_type'] == topology_globals.FRAME:
-                if msg['dest'] == inst.ip:
+                if msg['rreq_package']['dest'] == inst.ip:
                     msg['action_type'] = SEND_TO_UPPER
                     inst.send_packet(msg, msg['action_type'])
                 else:
