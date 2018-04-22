@@ -12,6 +12,7 @@ class LayerElement(object):
         self._x = _x
         self._y = _y
         self.active_route_requests = set()
+        self.route_requiring_message = dict()
 
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()

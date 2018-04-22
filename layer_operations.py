@@ -38,6 +38,10 @@ def network_layer_operation(inst, msg):
                     inst.send_packet(msg, msg['action_type'])
                 else:
                     inst.active_route_requests.pop(msg['rreq_package']['id'])
+                    rreq_package_tmp = msg['rreq_package']
+                    msg = inst.route_requiring_message[rreq_package_tmp['id']]
+                    msg['action_type'] = SEND_TO_LOWER
+                    inst.send_packet(msg, msg['action_type'])
 
             elif msg['message_type'] == topology_globals.FRAME:
                 if msg['dest'] == inst.ip:
@@ -54,8 +58,12 @@ def network_layer_operation(inst, msg):
                 msg = inst.route_request(msg)
                 inst.send_packet(msg, msg['action_type'])
 
-            msg['port'] += 10012
-            inst.send_packet(msg, msg['action_type'])
+            elif msg['message_type'] == topology_globals.FRAME:
+                msg_tmp = msg
+                msg = inst.route_request(msg)
+                inst.route_requiring_message[msg['rreq_package']['id']] = msg_tmp
+                inst.send_packet(msg, msg['action_type'])
+        return
 
     except:
         print 'Error occurred in network layer.'
