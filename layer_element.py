@@ -6,15 +6,15 @@ import pickle
 from globals.layer_globals import *
 from globals import topology_globals
 
+
 class LayerElement(object):
-    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, _x=0, _y=0, _host='localhost', to_int='127.0.0.1', max_node=5):
+    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1,
+                 _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1'):
         self._channel_connections = dict()
         self._x = _x
         self._y = _y
-        self._host = _host
         self.active_route_requests = set()
         self.route_requiring_message = dict()
-        self,_max_node = max_node
 
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
@@ -42,7 +42,8 @@ class LayerElement(object):
 
     def send_packet(self, json_packet, to_interface):
         if to_interface not in [SEND_TO_UPPER, SEND_TO_LOWER]:
-            raise Exception('Unknown operation. please pick one of them: (%s, %s)' % (str(SEND_TO_UPPER), str(SEND_TO_LOWER)))
+            raise Exception(
+                'Unknown operation. please pick one of them: (%s, %s)' % (str(SEND_TO_UPPER), str(SEND_TO_LOWER)))
 
         try:
             if to_interface == SEND_TO_UPPER:
@@ -77,8 +78,8 @@ class LayerElement(object):
     def create_rreq_package(self, dest):
         rreq_package = {
             'id': uuid.uuid4().int,
-            'source': self.ip, #TODO,
-            'dest': dest, #TODO,
+            'source': self.ip,  # TODO,
+            'dest': dest,  # TODO,
             'route': list()
         }
         return rreq_package
@@ -88,10 +89,10 @@ class LayerElement(object):
         if 'rreq_package' in msg.keys():
             rreq_package = msg['rreq_package']
 
-        if rreq_package == None: # Source node
+        if rreq_package == None:  # Source node
             rreq_package = self.create_rreq_package(msg['dest'])
             self.active_route_requests.add(rreq_package['id'])
-        else: # Junction or destination node
+        else:  # Junction or destination node
             if rreq_package['id'] in self.active_route_requests:
                 return
             else:
@@ -130,6 +131,7 @@ class LayerElement(object):
             t = threading.Thread(target=listen_interface_worker, args=(self, basic_operation, listen_interface))
             threads.append(t)
             t.start()
+
 
 def listen_interface_worker(self, basic_operation, listen_interface):
     if listen_interface not in [RECV_FROM_LOWER, RECV_FROM_UPPER]:
