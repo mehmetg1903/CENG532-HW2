@@ -7,7 +7,7 @@ from globals.layer_globals import *
 from globals import topology_globals
 
 class LayerElement(object):
-    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, _x=0, _y=0, _host='localhost', to_int='127.0.0.1'):
+    def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1, _port_send_to_upper=-1, _x=0, _y=0, _host='localhost', to_int='127.0.0.1', max_node=5):
         self._channel_connections = dict()
         self._x = _x
         self._y = _y

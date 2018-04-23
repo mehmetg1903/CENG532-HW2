@@ -36,13 +36,13 @@ def configureRouting(net):
         except:
             break
 
-
+    net.pingAll()
     swc = net.get('switch')
     hst.cmd( 'sysctl net.ipv4.ip_forward=1' )
     for hst in hosts:
-        swc.setIP('192.168.2.%s' % hst[-1], 24, 'swc-eth%s' % hst[-1])
-        swc.setMAC('AA:AA:AA:AA:AA:0%s' % hst[-1], 'swc-eth%s' % hst[-1])
-        swc.cmd('route add -net 192.168.2.0 netmask 255.255.255.0 gw 192.168.2.%s dev swc-eth%s' % (hst[-1], hst[-1]))
+        swc.setIP('192.168.2.%s' % hst[-1], 24, 'switch-eth%s' % (int(hst[-1]) - 1))
+        swc.setMAC('AA:AA:AA:AA:AA:1%s' % hst[-1], 'switch-eth%s' % (int(hst[-1]) - 1))
+        swc.cmd('route add -net 192.168.2.0 netmask 255.255.255.0 gw 192.168.2.%s dev switch-eth%s' % ((int(hst[-1]) - 1), (int(hst[-1]) - 1)))
     hosts['switch'] = swc
     net.staticArp()
 
