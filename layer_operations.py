@@ -92,6 +92,8 @@ def phy_link_layer_operation(inst, msg):
             inst.send_packet(msg, msg['action_type'])
         elif msg['action_type'] in [SEND_TO_LOWER]:
             msg['action_type'] = SEND_TO_UPPER
+            msg['source_x'] = inst._x
+            msg['source_y'] = inst._y
             msg['send_date'] = datetime.datetime.utcnow()
             inst.send_to_channel(msg)
 
