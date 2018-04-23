@@ -14,7 +14,7 @@ def app_layer_operation(inst, msg):
     msg = eval(msg)
     print 'Message received from (%s, %s).\nContent: %s' % (msg['host'], msg['port'], msg['message'])
     msg['action_type'] = SEND_TO_LOWER
-    #msg['dest'] ekle
+    msg['dest'] = '10.0.0.3'
     msg['message_type'] = topology_globals.FRAME
     inst.send_packet(str(msg), msg['action_type'])
 

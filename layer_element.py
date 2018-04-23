@@ -14,6 +14,7 @@ class LayerElement(object):
         self._host = _host
         self.active_route_requests = set()
         self.route_requiring_message = dict()
+        self,_max_node = max_node
 
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
