@@ -57,7 +57,6 @@ def network_layer_operation(inst, msg):
                     inst.send_packet(msg, msg['action_type'])
 
         elif msg['action_type'] == SEND_TO_LOWER:
-            # TODO: Routing.
             if msg['message_type'] == topology_globals.RREQ:
                 msg = inst.route_request(msg)
                 inst.send_packet(msg, msg['action_type'])
@@ -67,12 +66,11 @@ def network_layer_operation(inst, msg):
                 msg = inst.route_request(msg)
                 inst.route_requiring_message[msg['rreq_package']['id']] = msg_tmp
                 inst.send_packet(msg, msg['action_type'])
-        return
+        return True
 
     except:
         print 'Error occurred in network layer.'
         return False
-    return True
 
 
 def phy_link_layer_operation(inst, msg):
@@ -82,14 +80,16 @@ def phy_link_layer_operation(inst, msg):
         print 'Erroneous action!'
         return False
 
-    distance = math.sqrt(math.pow(inst._x - msg['source_x'], 2) + math.pow(inst._y - msg['source_y'], 2))
-    if distance > topology_globals.WIRELESS_RANGE:
-        return False
-
     try:
         if msg['action_type'] == SEND_TO_UPPER:
+            # Simulate wireless communication range
+            distance = math.sqrt(math.pow(inst._x - msg['source_x'], 2) + math.pow(inst._y - msg['source_y'], 2))
+            if distance > topology_globals.WIRELESS_RANGE:
+                return False
+
             msg['recv_date'] = datetime.datetime.utcnow()
             inst.send_packet(msg, msg['action_type'])
+
         elif msg['action_type'] in [SEND_TO_LOWER]:
             msg['action_type'] = SEND_TO_UPPER
             msg['source_x'] = inst._x
