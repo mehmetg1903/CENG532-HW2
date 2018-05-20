@@ -10,6 +10,7 @@ import application_layer_procedures
 
 def simulate(send_port=10000, recv_port=10012, max_dist=150):
     ip = socket.gethostbyname(socket.gethostname())
+    priority = random.randint(1,101)
     app_elem = LayerElement(_port_recv_from_lower=recv_port - 2, _port_send_to_lower=send_port, ip=ip)
     app_elem.start_listenning(app_layer_forward, [RECV_FROM_LOWER])
     network_elem = LayerElement(_port_recv_from_lower=recv_port - 1, _port_send_to_lower=send_port + 1,

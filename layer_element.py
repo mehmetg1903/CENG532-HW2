@@ -5,6 +5,7 @@ import uuid
 import pickle
 from globals.layer_globals import *
 from globals import topology_globals
+from globals.topology_globals import *
 
 
 class LayerElement(object):
@@ -18,6 +19,8 @@ class LayerElement(object):
         self.ip = ip
         self.nodes_in_range = set()
         self.nodes_in_range.add(self.ip)
+        self.priority = int(ip[ip.rfind('.') + 1:])
+        self.leader = None
 
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
@@ -79,7 +82,9 @@ class LayerElement(object):
         return True
 
     def broadcast(self, msg):
-        pass #TODO
+        msg["message_type"] = ELECTION_LEADER_ANNOUNCE
+        msg["dest"] = "10.0.0.6"
+
 
     def create_rreq_package(self, dest):
         rreq_package = {
