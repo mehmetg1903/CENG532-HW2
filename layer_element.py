@@ -9,12 +9,13 @@ from globals import topology_globals
 
 class LayerElement(object):
     def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1,
-                 _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1'):
+                 _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1', ip='0.0.0.0'):
         self._channel_connections = dict()
         self._x = _x
         self._y = _y
         self.active_route_requests = set()
         self.route_requiring_message = dict()
+        self.ip = ip
 
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
@@ -113,6 +114,7 @@ class LayerElement(object):
             'message_type': topology_globals.RREQ,
             'rreq_packet': rreq_package
         }
+        print json_packet
         return json_packet
 
     def route_response(self, rreq_package):

@@ -25,6 +25,8 @@ def network_layer_operation(inst, msg):
     if msg['action_type'] not in (SEND_TO_UPPER, SEND_TO_LOWER, NETWORK_BROADCAST):
         print 'Erroneous action!'
         return False
+    print msg['action_type']
+    print msg['message_type']
     try:
         if msg['action_type'] == SEND_TO_UPPER:
             if msg['message_type'] == topology_globals.RREQ:
@@ -69,6 +71,7 @@ def network_layer_operation(inst, msg):
         return True
 
     except:
+        print traceback.format_exc()
         print 'Error occurred in network layer.'
         return False
 
