@@ -15,6 +15,8 @@ class LayerElement(object):
         self._y = _y
         self.active_route_requests = set()
         self.route_requiring_message = dict()
+        self.nodes_in_range = set()
+        self.nodes_in_range.add(self.ip)
 
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
@@ -74,6 +76,9 @@ class LayerElement(object):
             traceback.print_exc()
             return False
         return True
+
+    def broadcast(self, msg):
+        pass #TODO
 
     def create_rreq_package(self, dest):
         rreq_package = {

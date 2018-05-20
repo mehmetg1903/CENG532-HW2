@@ -3,7 +3,8 @@ from layer_element import LayerElement
 from globals.layer_globals import *
 import random
 from sys import argv
-
+from threading import Thread
+import application_layer_procedures
 
 def simulate(send_port=10000, recv_port=10012, max_dist=150):
     app_elem = LayerElement(_port_recv_from_lower=recv_port, _port_send_to_lower=send_port)
@@ -22,6 +23,9 @@ def simulate(send_port=10000, recv_port=10012, max_dist=150):
     msg['message_type'] = topology_globals.FRAME
     app_elem.send_packet(str(msg), msg['action_type'])
 
+    node_list_bcast_thread = Thread(target=application_layer_procedures.broadcast_nodes_in_range, args=(app_elem, ))
+    node_list_bcast_thread.start()
+    node_list_bcast_thread.join()
 
 if __name__ == '__main__':
     if len(argv) > 1:
