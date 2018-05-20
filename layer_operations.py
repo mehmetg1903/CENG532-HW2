@@ -3,12 +3,16 @@ from globals import topology_globals
 import traceback
 import datetime
 import math
-
+import application_layer_procedures
+from threading import Thread
 
 def app_layer_forward(inst, msg):
     msg = eval(msg)
     print 'Message received from (%s, %s).\tContent: %s' % (msg['host'], msg['port'], msg['message'])
 
+    if msg['action_type'] == SEND_TO_UPPER:
+        if msg['message_type'] == NETWORK_BROADCAST:
+            application_layer_procedures.detect_network(inst)
 
 def app_layer_operation(inst, msg):
     msg = eval(msg)
@@ -58,6 +62,10 @@ def network_layer_operation(inst, msg):
                     msg['action_type'] = SEND_TO_LOWER
                     inst.send_packet(msg, msg['action_type'])
 
+            elif msg['message_type'] == NETWORK_BROADCAST:
+                inst.send_packet(msg, msg['action_type'])
+
+
         elif msg['action_type'] == SEND_TO_LOWER:
             if msg['message_type'] == topology_globals.RREQ:
                 msg = inst.route_request(msg)
@@ -68,6 +76,10 @@ def network_layer_operation(inst, msg):
                 msg = inst.route_request(msg)
                 inst.route_requiring_message[msg['rreq_package']['id']] = msg_tmp
                 inst.send_packet(msg, msg['action_type'])
+
+            elif msg['message_type'] == NETWORK_BROADCAST:
+                inst.send_packet(msg, msg['action_type'])
+
         return True
 
     except:
@@ -90,6 +102,10 @@ def phy_link_layer_operation(inst, msg):
             if distance > topology_globals.WIRELESS_RANGE:
                 return False
 
+            if 'is_broadcast'in msg.keys():
+                if msg['is_broadcast'] == 1:
+                    inst.broadcast(msg)
+
             msg['recv_date'] = datetime.datetime.utcnow()
             inst.send_packet(msg, msg['action_type'])
 
@@ -100,8 +116,9 @@ def phy_link_layer_operation(inst, msg):
             msg['send_date'] = datetime.datetime.utcnow()
             inst.send_to_channel(msg)
 
+        return True
+
     except:
         traceback.print_exc()
         print 'Error occurred in phy_link layer.'
         return False
-    return True
