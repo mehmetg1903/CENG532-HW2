@@ -8,9 +8,9 @@ import socket
 from threading import Thread
 import application_layer_procedures
 
-def simulate(send_port=10000, recv_port=10012, max_dist=150):
+
+def simulate(send_port=10000, recv_port=10012, max_dist=150, algo='bully'):
     ip = socket.gethostbyname(socket.gethostname())
-    priority = random.randint(1,101)
     app_elem = LayerElement(_port_recv_from_lower=recv_port - 2, _port_send_to_lower=send_port, ip=ip)
     app_elem.start_listenning(app_layer_forward, [RECV_FROM_LOWER])
     network_elem = LayerElement(_port_recv_from_lower=recv_port - 1, _port_send_to_lower=send_port + 1,
@@ -28,13 +28,14 @@ def simulate(send_port=10000, recv_port=10012, max_dist=150):
 
     app_elem.send_packet(str(msg), msg['action_type'])
 
-    node_list_bcast_thread = Thread(target=application_layer_procedures.broadcast_nodes_in_range, args=(app_elem, ))
+    node_list_bcast_thread = Thread(target=application_layer_procedures.broadcast_nodes_in_range, args=(app_elem,))
     node_list_bcast_thread.start()
     node_list_bcast_thread.join()
 
+
 if __name__ == '__main__':
     if len(argv) > 1:
-        max_dist = int(argv[1])
+        algorithm = int(argv[1])
     else:
-        max_dist = 150
-    simulate()
+        algorithm = 0
+    simulate(algo='bully' if algorithm == 0 else 'modified')

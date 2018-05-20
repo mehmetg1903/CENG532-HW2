@@ -2,7 +2,6 @@ import traceback
 import threading
 import zmq
 import uuid
-import pickle
 from globals.layer_globals import *
 from globals import topology_globals
 from globals.topology_globals import *
@@ -21,7 +20,7 @@ class LayerElement(object):
         self.nodes_in_range.add(self.ip)
         self.priority = int(ip[ip.rfind('.') + 1:])
         self.leader = None
-
+        self.algorithm = 'bully'
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
             # print '_sock_recv_from_lower: %s OK!' % str(_port_recv_from_lower)
@@ -81,10 +80,24 @@ class LayerElement(object):
             return False
         return True
 
-    def broadcast(self, msg):
+    def broadcast_election(self, msg):
         msg["message_type"] = ELECTION_LEADER_ANNOUNCE
         msg["dest"] = "10.0.0.6"
 
+    def prepare_grant(self, ip):
+        # TODO: Send grant to leader
+        pass
+
+    def handle_election(self, msg):
+        '''
+
+        :param msg:
+            -> src_ip
+            -> message_type: ELECTION_LEADER_ANNOUNCE
+        :return:
+        '''
+        # TODO: Check algoritm. if modified: prepare_grant(src_ip)
+        pass
 
     def create_rreq_package(self, dest):
         rreq_package = {
