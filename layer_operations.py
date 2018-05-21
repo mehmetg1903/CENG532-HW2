@@ -4,7 +4,23 @@ import traceback
 import datetime
 import math
 import application_layer_procedures
-from threading import Thread
+
+
+def switch_app_operation(inst, msg):
+    msg = eval(msg)
+    if msg['action_type'] == SEND_TO_UPPER:
+        if msg["message_type"] == topology_globals.ELECTION_LEADER_ANNOUNCE:
+            inst.leader = msg["src_ip"]
+            if inst.algorithm == 'modified':
+                inst.prepare_grant(inst.leader)
+            for node in [e for e in inst.nodes_in_range if e != inst.ip]:
+                msg['action_type'] = SEND_TO_LOWER
+                msg["dest"] = node
+                inst.send_packet(msg, SEND_TO_LOWER)
+
+        elif msg["message_type"] == topology_globals.ELECTION_LEADER_GRANT:
+            pass
+
 
 def app_layer_forward(inst, msg):
     msg = eval(msg)
@@ -13,6 +29,7 @@ def app_layer_forward(inst, msg):
     if msg['action_type'] == SEND_TO_UPPER:
         if msg['message_type'] == NETWORK_BROADCAST:
             application_layer_procedures.detect_network(inst)
+
 
 def app_layer_operation(inst, msg):
     msg = eval(msg)
@@ -23,14 +40,20 @@ def app_layer_operation(inst, msg):
     inst.send_packet(str(msg), msg['action_type'])
 
 
+def switch_network_operation(inst, msg):
+    msg = eval(msg)
+    if msg['action_type'] not in (SEND_TO_UPPER, SEND_TO_LOWER, NETWORK_BROADCAST):
+        print 'Erroneous action!'
+        return False
+    inst.send_packet(msg, msg['action_type'])
+
+
 def network_layer_operation(inst, msg):
     print 'Arrived network layer with: ' + msg
     msg = eval(msg)
     if msg['action_type'] not in (SEND_TO_UPPER, SEND_TO_LOWER, NETWORK_BROADCAST):
         print 'Erroneous action!'
         return False
-    print msg['action_type']
-    print msg['message_type']
     try:
         if msg['action_type'] == SEND_TO_UPPER:
             if msg['message_type'] == topology_globals.RREQ:
@@ -58,7 +81,7 @@ def network_layer_operation(inst, msg):
                     msg['action_type'] = SEND_TO_UPPER
                     inst.send_packet(msg, msg['action_type'])
                 else:
-                    msg['dest'] = msg['rreq_package']['route'][ msg['rreq_package']['route'].index(inst.ip) + 1 ]
+                    msg['dest'] = msg['rreq_package']['route'][msg['rreq_package']['route'].index(inst.ip) + 1]
                     msg['action_type'] = SEND_TO_LOWER
                     inst.send_packet(msg, msg['action_type'])
 
@@ -78,6 +101,9 @@ def network_layer_operation(inst, msg):
                 inst.send_packet(msg, msg['action_type'])
 
             elif msg['message_type'] == NETWORK_BROADCAST:
+                inst.send_packet(msg, msg['action_type'])
+
+            elif msg['message_type'] == topology_globals.ELECTION_LEADER_ANNOUNCE:
                 inst.send_packet(msg, msg['action_type'])
 
         return True
@@ -102,7 +128,7 @@ def phy_link_layer_operation(inst, msg):
             if distance > topology_globals.WIRELESS_RANGE:
                 return False
 
-            if 'is_broadcast'in msg.keys():
+            if 'is_broadcast' in msg.keys():
                 if msg['is_broadcast'] == 1:
                     inst.broadcast(msg)
 
@@ -119,6 +145,5 @@ def phy_link_layer_operation(inst, msg):
         return True
 
     except:
-        traceback.print_exc()
         print 'Error occurred in phy_link layer.'
         return False

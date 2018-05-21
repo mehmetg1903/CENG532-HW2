@@ -9,7 +9,7 @@ from globals.topology_globals import *
 
 class LayerElement(object):
     def __init__(self, _port_recv_from_lower=-1, _port_recv_from_upper=-1, _port_send_to_lower=-1,
-                 _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1', ip='0.0.0.0'):
+                 _port_send_to_upper=-1, _x=0, _y=0, to_int='127.0.0.1', ip='0.0.0.0', algorithm='bully'):
         self._channel_connections = dict()
         self._x = _x
         self._y = _y
@@ -18,9 +18,9 @@ class LayerElement(object):
         self.ip = ip
         self.nodes_in_range = set()
         self.nodes_in_range.add(self.ip)
-        self.priority = int(ip[ip.rfind('.') + 1:])
         self.leader = None
-        self.algorithm = 'bully'
+        self.algorithm = algorithm
+
         if _port_recv_from_lower != -1:
             self._context_recv_from_lower = zmq.Context()
             # print '_sock_recv_from_lower: %s OK!' % str(_port_recv_from_lower)
@@ -83,10 +83,17 @@ class LayerElement(object):
     def broadcast_election(self, msg):
         msg["message_type"] = ELECTION_LEADER_ANNOUNCE
         msg["dest"] = "10.0.0.6"
+        msg["src_ip"] = self.ip
+        msg["action_type"] = SEND_TO_LOWER
+        self.send_packet(msg, SEND_TO_LOWER)
 
     def prepare_grant(self, ip):
-        # TODO: Send grant to leader
-        pass
+        msg = dict()
+        msg["message_type"] = ELECTION_LEADER_GRANT
+        msg["dest"] = ip
+        msg["src_ip"] = self.ip
+        msg["action_type"] = SEND_TO_LOWER
+        self.send_packet(msg, SEND_TO_LOWER)
 
     def handle_election(self, msg):
         '''
